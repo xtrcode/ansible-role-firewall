@@ -1,0 +1,8 @@
+---
+- name: Install packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - iptables
+    - iptables-persistent

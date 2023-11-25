@@ -1,0 +1,39 @@
+---
+# defaults file for firewall
+firewall_input_chain: "ansible_input"
+firewall_output_chain: "ansible_output"
+firewall_forward_chain: "ansible_forward"
+firewall_input_policy: "DROP"
+firewall_forward_policy: "DROP"
+firewall_output_policy: "ACCEPT"
+firewall_dhcp_interface: "eth0"
+firewall_rules: []
+firewall_default_rules:
+  - {
+      ctstate: "ESTABLISHED,RELATED",
+      jump: ACCEPT,
+      comment: "Allow related (replies to already established connections)",
+    }
+  #
+  - {
+      in_interface: lo,
+      jump: ACCEPT,
+      comment: "Allow all and everything on lo",
+    }
+  - {
+      chain: "{{ firewall_output_chain }}",
+      out_interface: lo,
+      jump: ACCEPT,
+      comment: "Allow all and everything on lo",
+    }
+  - { protocol: icmp, jump: ACCEPT, comment: "Allow icmp (ping)" }
+  - { source_port: 53, protocol: tcp, jump: ACCEPT, comment: "Allow dns" }
+  - { source_port: 53, protocol: udp, jump: ACCEPT, comment: "Allow dns" }
+  - {
+      protocol: udp,
+      in_interface: "{{ firewall_dhcp_interface }}",
+      source_port: 67:68,
+      destination_port: 67:68,
+      jump: ACCEPT,
+      comment: "Allow dhcp",
+    }

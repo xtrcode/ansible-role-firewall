@@ -1,0 +1,55 @@
+---
+- name: Install
+  ansible.builtin.include_tasks: install.yml
+  when: firewall_install | bool
+
+- name: Prevent lock-out on flush
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: ACCEPT
+  when: firewall_flush | bool
+
+- name: Flush
+  ansible.builtin.iptables:
+    flush: true
+  when: firewall_flush | bool
+
+- name: Add defaults
+  ansible.builtin.include_tasks: default.yml
+  when: firewall_defaults | bool
+
+- name: Add default rules
+  ansible.builtin.include_tasks: rule.yml
+  vars:
+    firewall_rules: "{{  firewall_default_rules }}"
+  when: firewall_default_rules is defined
+
+- name: Add custom rules
+  ansible.builtin.include_tasks: rule.yml
+  when: firewall_rules is defined
+
+- name: Block everything else on input
+  ansible.builtin.iptables:
+    chain: "{{ firewall_input_chain }}"
+    jump: "REJECT"
+
+- name: Apply input policy
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: "{{ firewall_input_policy }}"
+
+- name: Apply forward policy
+  ansible.builtin.iptables:
+    chain: FORWARD
+    policy: "{{ firewall_forward_policy }}"
+
+- name: Apply output policy
+  ansible.builtin.iptables:
+    chain: OUTPUT
+    policy: "{{ firewall_output_policy }}"
+
+- name: Save rules.v4
+  ansible.builtin.shell: iptables-save > /etc/iptables/rules.v4
+
+- name: Save rules.v6
+  ansible.builtin.shell: ip6tables-save > /etc/iptables/rules.v6

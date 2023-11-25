@@ -1,0 +1,17 @@
+---
+- name: Add rules
+  ansible.builtin.iptables:
+    chain: "{{ rule.chain | default(firewall_input_chain) }}"
+    protocol: "{{ rule.protocol | default(omit) }}"
+    source: "{{ rule.source | default(omit) }}"
+    source_port: "{{ rule.source_port | default(omit) }}"
+    destination: "{{ rule.destination | default(omit) }}"
+    destination_port: "{{ rule.destination_port | default(omit) }}"
+    ctstate: "{{ rule.ctstate | default(omit) }}"
+    in_interface: "{{ rule.in_interface | default(omit) }}"
+    out_interface: "{{ rule.out_interface | default(omit) }}"
+    jump: "{{ rule.jump | default(omit) }}"
+    comment: "{{ rule.comment | default(omit) }}"
+  loop: "{{ firewall_rules }}"
+  loop_control:
+    loop_var: rule

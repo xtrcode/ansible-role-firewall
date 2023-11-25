@@ -1,0 +1,33 @@
+---
+- name: Create custom chains
+  ansible.builtin.iptables:
+    chain: "{{item}}"
+    chain_management: true
+  loop:
+    - "{{ firewall_input_chain }}"
+    - "{{ firewall_forward_chain }}"
+    - "{{ firewall_output_chain }}"
+
+- name: Fix bug #80256
+  ansible.builtin.iptables:
+    chain: "{{item}}"
+    flush: true
+  loop:
+    - "{{ firewall_input_chain }}"
+    - "{{ firewall_forward_chain }}"
+    - "{{ firewall_output_chain }}"
+
+- name: Append to input chain
+  ansible.builtin.iptables:
+    chain: INPUT
+    jump: "{{ firewall_input_chain }}"
+
+- name: Append to forward chain
+  ansible.builtin.iptables:
+    chain: FORWARD
+    jump: "{{ firewall_forward_chain }}"
+
+- name: Append to output chain
+  ansible.builtin.iptables:
+    chain: OUTPUT
+    jump: "{{ firewall_output_chain }}"
